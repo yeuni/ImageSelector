@@ -1,0 +1,87 @@
+package yeuni.co.tz.imageselector.Utils;
+
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.util.Log;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.concurrent.Callable;
+
+
+
+/**
+ * Created on : July 26, 2019
+ * Author     : Yeuni Gilbert
+ * Email : yeunidev@gmail.com
+ * Website    : https://nougattechnologies.com.co.tz/
+ */
+public class FileCompressor {
+    //max width and height values of the compressed image is taken as 612x816
+    private int maxWidth = 612;
+    private int maxHeight = 816;
+    private Bitmap.CompressFormat compressFormat = Bitmap.CompressFormat.JPEG;
+    private int quality = 95;
+    private String destinationDirectoryPath;
+
+    public FileCompressor(Context context) {
+        destinationDirectoryPath = context.getCacheDir().getPath() + File.separator + "images";
+    }
+
+    public FileCompressor setMaxWidth(int maxWidth) {
+        this.maxWidth = maxWidth;
+        return this;
+    }
+
+    public FileCompressor setMaxHeight(int maxHeight) {
+        this.maxHeight = maxHeight;
+        return this;
+    }
+
+    public FileCompressor setCompressFormat(Bitmap.CompressFormat compressFormat) {
+        this.compressFormat = compressFormat;
+        return this;
+    }
+
+    public FileCompressor setQuality(int quality) {
+        this.quality = quality;
+        return this;
+    }
+
+    public FileCompressor setDestinationDirectoryPath(String destinationDirectoryPath) {
+        this.destinationDirectoryPath = destinationDirectoryPath;
+        return this;
+    }
+
+    public File compressToFile(File imageFile) throws IOException {
+        Log.d("chokaaa","compressToFile1: "+compressToFile(imageFile, imageFile.getName()));
+        Log.d("chokaaa","length: "+imageFile.length());
+        Log.d("chokaaa","imageFile.getName(): "+imageFile.getName());
+
+        return compressToFile(imageFile, imageFile.getName());
+    }
+
+    public File compressToFile(File imageFile, String compressedFileName) throws IOException {
+
+        Log.d("chokaaa","compressToFile2: "+ yeuni.co.tz.imageselector.Utils.ImageUtil.compressImage(imageFile, maxWidth, maxHeight, compressFormat, quality,
+                destinationDirectoryPath + File.separator + compressedFileName));
+
+        Log.d("chokaaa","length2: "+imageFile.length());
+        Log.d("chokaaa","imageFile.getName()2: "+imageFile.getName());
+
+
+        Log.d("niambieee","Rusishaaa:  "+ yeuni.co.tz.imageselector.Utils.ImageUtil.compressImage(imageFile, maxWidth, maxHeight, compressFormat, quality,
+                destinationDirectoryPath + File.separator + compressedFileName));
+
+        return yeuni.co.tz.imageselector.Utils.ImageUtil.compressImage(imageFile, maxWidth, maxHeight, compressFormat, quality,
+                destinationDirectoryPath + File.separator + compressedFileName);
+
+
+    }
+
+    public Bitmap compressToBitmap(File imageFile) throws IOException {
+        return yeuni.co.tz.imageselector.Utils.ImageUtil.decodeSampledBitmapFromFile(imageFile, maxWidth, maxHeight);
+    }
+
+
+}
