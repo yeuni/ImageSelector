@@ -5,6 +5,7 @@ import androidx.core.content.FileProvider;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
@@ -34,6 +35,14 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 import yeuni.co.tz.imageselector.Utils.FileCompressor;
 
 public class MainActivity extends AppCompatActivity {
@@ -51,6 +60,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_CODE = 2384;
     Uri selectedImage = null;
     ImageView img_browser;
+    ApiService   apiService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,6 +69,19 @@ public class MainActivity extends AppCompatActivity {
         mCompressor = new FileCompressor(this);
 
         img_browser=findViewById(R.id.img_browser);
+
+        //https://eduafya.co.tz/safesafarisapp/uploadImage.php
+
+        String baseUrl = "https://eduafya.co.tz/safesafarisapp/"; // Replace with your actual base URL
+
+        // Create a Retrofit instance
+      Retrofit  retrofit = new Retrofit.Builder()
+                .baseUrl(baseUrl)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        // Create an instance of the ApiService interface
+        apiService = retrofit.create(ApiService.class);
 
         img_browser.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -70,6 +93,45 @@ public class MainActivity extends AppCompatActivity {
 
 
 
+            }
+        });
+    }
+
+    public void uploadImage(String imagePath) {
+        // Create a File object from the image path
+        File file = new File(imagePath);
+
+        // Create a request body for the file
+        RequestBody fileBody = RequestBody.create(MediaType.parse("image/*"), file);
+
+        // Create a MultipartBody.Part from the file request body
+        MultipartBody.Part imagePart = MultipartBody.Part.createFormData("image", file.getName(), fileBody);
+
+        // Make the API call to upload the image
+        Call<ImageResponse> call = apiService.uploadImage(imagePart);
+        call.enqueue(new Callback<ImageResponse>() {
+            @Override
+            public void onResponse(Call<ImageResponse> call, Response<ImageResponse> response) {
+                if (response.isSuccessful()) {
+                    // Handle the successful response here
+                    ImageResponse imageResponse = response.body();
+                    if (imageResponse != null) {
+                        String imageUrl = imageResponse.getImageUrl();
+                        // Do something with the image URL
+                        Toast.makeText(MainActivity.this, "Image uploaded successfully. URL: " + imageUrl, Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    Log.e("TANZANIA","ERROR: "+response.message());
+                    // Handle the error response
+                    Toast.makeText(MainActivity.this, "Image upload failed. " + response.message(), Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ImageResponse> call, Throwable t) {
+                // Handle network or other errors
+                Log.e("TANZANIA","ERROR THROWABLE: "+t.getMessage());
+                Toast.makeText(MainActivity.this, "Image upload failed. " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -280,7 +342,7 @@ public class MainActivity extends AppCompatActivity {
 
                 ///>>>> CALL METHOD TO UPLOAD IMAGE FILE TO SERVER
               //  uploadFileToServer(String.valueOf(mPhotoFile));
-
+                uploadImage(String.valueOf(mPhotoFile));
 
                 File file = new File(String.valueOf(mPhotoFile));
                 long length = file.length();
@@ -318,6 +380,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.d("nakupemdaa", "BAADAFile Path : " + file.getPath() + ", File size : " + length + " KB");
                 ///>>>> CALL METHOD TO UPLOAD IMAGE FILE TO SERVER
                // uploadFileToServer(String.valueOf(mPhotoFile));
+                uploadImage(String.valueOf(mPhotoFile));
 
                 Glide.with(this).
                         load(mPhotoFile).apply(new RequestOptions().centerCrop().
@@ -329,6 +392,14 @@ public class MainActivity extends AppCompatActivity {
             //end
 
         }
+
+
+
     }
+
+
+
+
+
 
 }
